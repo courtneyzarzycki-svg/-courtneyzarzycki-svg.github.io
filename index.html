@@ -321,7 +321,24 @@ function fbPush(){if(!fbConfigured())return;setSyncStatus("Saving...","#6366f1")
 function fbPull(onDone){if(!fbConfigured()){if(onDone)onDone();return;}setSyncStatus("Syncing...","#6366f1");var xhr=new XMLHttpRequest();xhr.open("GET",FB_URL+"/familyhub.json",true);xhr.onload=function(){if(xhr.status>=200&&xhr.status<300){try{var remote=JSON.parse(xhr.responseText);if(remote&&typeof remote==="object"&&remote.events!==undefined){if(remote.appVersion&&remote.appVersion!==APP_VERSION){window.location.reload(true);return;}if(JSON.stringify(remote)!==JSON.stringify(STATE)){for(var k in remote)STATE[k]=remote[k];try{localStorage.setItem("fhub8",JSON.stringify(STATE));}catch(e){}if(currentUser)renderCurrentTab();}}setSyncStatus("Synced","#22c55e");}catch(e){setSyncStatus("Parse error","#ef4444");}}else{setSyncStatus("Error "+xhr.status,"#ef4444");}if(onDone)onDone();};xhr.onerror=function(){setSyncStatus("Network error","#ef4444");if(onDone)onDone();};xhr.send();}
 var syncInterval=null;
 function startSync(){fbPull();if(syncInterval)clearInterval(syncInterval);syncInterval=setInterval(fbPull,15000);}
-function showSyncSetup(){var el=document.getElementById("generic-modal-content");el.innerHTML="";var t=document.createElement("div");t.style.cssText="font-weight:700;font-size:17px;margin-bottom:8px";t.textContent="Connect Family Sync";var sub=document.createElement("div");sub.style.cssText="font-size:13px;color:#6b7280;margin-bottom:14px;line-height:1.5";sub.textContent="One-time setup. Everyone enters the same URL. No tokens or passwords.";var steps=document.createElement("div");steps.style.cssText="background:#f9fafb;border-radius:10px;padding:12px;margin-bottom:12px";["Go to console.firebase.google.com","Create a project (e.g. myles-family)","Click Realtime Database in left menu","Click Create Database, any region","On rules page choose Start in test mode","Copy the database URL (https://...firebaseio.com)","Paste it below and tap Connect"].forEach(function(s,i){var row=document.createElement("div");row.style.cssText="display:flex;gap:8px;align-items:flex-start;padding:3px 0";var num=document.createElement("div");num.style.cssText="width:20px;height:20px;border-radius:50%;background:#6366f1;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0";num.textContent=i+1;var txt=document.createElement("div");txt.style.cssText="font-size:12px;color:#374151;line-height:1.4;padding-top:2px";txt.textContent=s;row.appendChild(num);row.appendChild(txt);steps.appendChild(row);});var note=document.createElement("div");note.style.cssText="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:8px 10px;font-size:12px;color:#166534;margin-bottom:12px";note.textContent="Safe to share with family. No passwords needed.";var lbl=document.createElement("div");lbl.style.cssText="font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px";lbl.textContent="Database URL";var inp=document.createElement("input");inp.id="fb-url-inp";inp.placeholder="https://your-project-default-rtdb.firebaseio.com";inp.style.marginBottom="12px";if(FB_URL)inp.value=FB_URL;var btnRow=document.createElement("div");btnRow.style.cssText="display:flex;gap:8px";var cb=document.createElement("button");cb.className="btn btn-primary";cb.style.flex="1";cb.textContent="Connect";cb.onclick=function(){var url=document.getElementById("fb-url-inp").value.trim().replace(/\/+$/,"");if(!url||!url.startsWith("https://")){showInfoModal("Invalid URL","Enter the full URL starting with https://");return;}FB_URL=url;localStorage.setItem("fhub_fburl",url);cb.textContent="Connecting...";cb.disabled=true;fbPush();setTimeout(function(){fbPull(function(){startSync();closeModal("generic-modal");showInfoModal("Connected!","All family phones will now sync automatically.");});},1000);};var sb=document.createElement("button");sb.className="btn btn-secondary";sb.textContent="Skip";sb.onclick=function(){closeModal("generic-modal");};btnRow.appendChild(cb);btnRow.appendChild(sb);el.appendChild(t);el.appendChild(sub);el.appendChild(steps);el.appendChild(note);el.appendChild(lbl);el.appendChild(inp);el.appendChild(btnRow);document.getElementById("generic-modal").classList.add("open");}
+function showSyncSetup(){var el=document.getElementById("generic-modal-content");el.innerHTML="";var t=document.createElement("div");t.style.cssText="font-weight:700;font-size:17px;margin-bottom:8px";t.textContent="Connect Family Sync";var sub=document.createElement("div");sub.style.cssText="font-size:13px;color:#6b7280;margin-bottom:14px;line-height:1.5";sub.textContent="One-time setup. Everyone enters the same URL. No tokens or passwords.";var steps=document.createElement("div");steps.style.cssText="background:#f9fafb;border-radius:10px;padding:12px;margin-bottom:12px";["Go to console.firebase.google.com","Create a project (e.g. myles-family)","Click Realtime Database in left menu","Click Create Database, any region","On rules page choose Start in test mode","Copy the database URL (https://...firebaseio.com)","Paste it below and tap Connect"].forEach(function(s,i){var row=document.createElement("div");row.style.cssText="display:flex;gap:8px;align-items:flex-start;padding:3px 0";var num=document.createElement("div");num.style.cssText="width:20px;height:20px;border-radius:50%;background:#6366f1;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0";num.textContent=i+1;var txt=document.createElement("div");txt.style.cssText="font-size:12px;color:#374151;line-height:1.4;padding-top:2px";txt.textContent=s;row.appendChild(num);row.appendChild(txt);steps.appendChild(row);});var note=document.createElement("div");note.style.cssText="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:8px 10px;font-size:12px;color:#166534;margin-bottom:12px";note.textContent="Safe to share with family. No passwords needed.";var lbl=document.createElement("div");lbl.style.cssText="font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px";lbl.textContent="Database URL";var inp=document.createElement("input");inp.id="fb-url-inp";inp.placeholder="https://your-project-default-rtdb.firebaseio.com";inp.style.marginBottom="12px";if(FB_URL)inp.value=FB_URL;var btnRow=document.createElement("div");btnRow.style.cssText="display:flex;gap:8px";var cb=document.createElement("button");cb.className="btn btn-primary";cb.style.flex="1";cb.textContent="Connect";cb.onclick=function(){var url=document.getElementById("fb-url-inp").value.trim().replace(/\/+$/,"");if(!url||!url.startsWith("https://")){showInfoModal("Invalid URL","Enter the full URL starting with https://");return;}FB_URL=url;localStorage.setItem("fhub_fburl",url);cb.textContent="Connecting...";cb.disabled=true;
+    // Pull first - only push if Firebase has no data yet
+    var checkXhr=new XMLHttpRequest();
+    checkXhr.open("GET",FB_URL+"/familyhub/events.json",true);
+    checkXhr.onload=function(){
+      var isEmpty=checkXhr.status===200&&(checkXhr.responseText==="null"||checkXhr.responseText==="{}");
+      if(isEmpty){
+        // Firebase is empty - this is the first device, push our data up
+        fbPush();
+      }
+      // Always pull to get latest, then start syncing
+      setTimeout(function(){fbPull(function(){startSync();closeModal("generic-modal");showInfoModal("Connected!","Family Hub is now syncing across all devices.");});},isEmpty?1000:0);
+    };
+    checkXhr.onerror=function(){
+      // Can't reach Firebase - just try connecting anyway
+      fbPull(function(){startSync();closeModal("generic-modal");showInfoModal("Connected!","Family Hub is now syncing across all devices.");});
+    };
+    checkXhr.send();};var sb=document.createElement("button");sb.className="btn btn-secondary";sb.textContent="Skip";sb.onclick=function(){closeModal("generic-modal");};btnRow.appendChild(cb);btnRow.appendChild(sb);el.appendChild(t);el.appendChild(sub);el.appendChild(steps);el.appendChild(note);el.appendChild(lbl);el.appendChild(inp);el.appendChild(btnRow);document.getElementById("generic-modal").classList.add("open");}
 function save(){try{localStorage.setItem("fhub8",JSON.stringify(STATE));}catch(e){}fbPush();}
 function load(){try{var s=localStorage.getItem("fhub8");if(s){var d=JSON.parse(s);for(var k in d)STATE[k]=d[k];}}catch(e){}}
 load();
@@ -900,7 +917,7 @@ function renderTaskContent(){
       if(isAdmin){
         var gBtn=document.createElement("button");gBtn.className="btn btn-secondary btn-sm";gBtn.textContent="+ Give Reward";(function(k){gBtn.onclick=function(){openGiveReward(k);};})(kid);hdr.appendChild(gBtn);
         var resetBtn=document.createElement("button");resetBtn.className="btn btn-danger btn-sm";resetBtn.style.marginLeft="4px";resetBtn.textContent="Reset";
-        (function(k){resetBtn.onclick=function(){confirmAction("Reset all rewards for "+MEMBERS[k].name+"?",function(){STATE.rewards[k]=0;STATE.rewardLog[k]=[];STATE.manualRewards[k]=[];save();renderTaskContent();});};})(kid);
+        (function(k){resetBtn.onclick=function(){confirmAction("Reset all rewards for "+MEMBERS[k].name+"?",function(){if(!STATE.rewards)STATE.rewards={};if(!STATE.rewardLog)STATE.rewardLog={};if(!STATE.manualRewards)STATE.manualRewards={};STATE.rewards[k]=0;STATE.rewardLog[k]=[];STATE.manualRewards[k]=[];save();renderTaskContent();});};})(kid);
         hdr.appendChild(resetBtn);
       }
       card.appendChild(hdr);
@@ -922,9 +939,20 @@ function renderTaskContent(){
         if(isAdmin){
           var delR=document.createElement("button");delR.style.cssText="background:none;border:none;color:#ef4444;cursor:pointer;font-size:16px;padding:0 2px";delR.innerHTML="&#215;";
           (function(rr,kk){delR.onclick=function(){
-            STATE.rewardLog[kk]=(STATE.rewardLog[kk]||[]).filter(function(x){return !(x.text===rr.text&&x.date===rr.date&&x.pts===rr.pts);});
-            STATE.manualRewards[kk]=(STATE.manualRewards[kk]||[]).filter(function(x){return !(x.text===rr.text&&x.date===rr.date&&x.pts===rr.pts);});
-            STATE.rewards[kk]=Math.max(0,(STATE.rewards[kk]||0)-rr.pts);
+            // Remove from rewardLog
+            var rl=STATE.rewardLog[kk]||[];
+            var ri=rl.findIndex?rl.findIndex(function(x){return x.text===rr.text&&x.date===rr.date&&x.pts===rr.pts;}):rl.map(function(x,i){return x.text===rr.text&&x.date===rr.date&&x.pts===rr.pts?i:-1;}).filter(function(i){return i>=0;})[0];
+            if(ri>=0)rl.splice(ri,1);
+            STATE.rewardLog[kk]=rl;
+            // Remove from manualRewards
+            var mr=STATE.manualRewards[kk]||[];
+            var mi=mr.findIndex?mr.findIndex(function(x){return x.text===rr.text&&x.date===rr.date&&x.pts===rr.pts;}):mr.map(function(x,i){return x.text===rr.text&&x.date===rr.date&&x.pts===rr.pts?i:-1;}).filter(function(i){return i>=0;})[0];
+            if(mi>=0)mr.splice(mi,1);
+            STATE.manualRewards[kk]=mr;
+            // Recalculate total from logs
+            var chorePts=(STATE.rewardLog[kk]||[]).reduce(function(a,r){return a+(r.pts||0);},0);
+            var bonusPts=(STATE.manualRewards[kk]||[]).reduce(function(a,r){return a+(r.pts||0);},0);
+            STATE.rewards[kk]=chorePts+bonusPts;
             save();renderTaskContent();
           };})(r,kid);
           row.appendChild(delR);
