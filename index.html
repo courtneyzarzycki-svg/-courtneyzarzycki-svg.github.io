@@ -39,7 +39,7 @@ textarea{resize:none;min-height:70px}
 .check-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f3f4f6}
 .fab{position:fixed;bottom:72px;right:14px;width:52px;height:52px;border-radius:50%;background:#1a1a1a;color:white;display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.25);border:none;z-index:90}
 .member-chip{padding:6px 12px;border-radius:20px;font-size:13px;font-weight:500;border:1.5px solid;cursor:pointer;display:inline-block;margin:3px}
-.event-card{padding:10px 14px;border-radius:12px;margin-bottom:8px;border-left:4px solid #888}
+.event-card{padding:10px 14px;border-radius:12px;margin-bottom:8px;border-left:4px solid #888}.event-card.job-event{border:3px solid #888;border-left:3px solid #888}
 .pill{display:inline-block;padding:1px 8px;border-radius:20px;font-size:10px;font-weight:600;margin:1px}
 .notif-banner{background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:12px;padding:12px 14px;margin-bottom:12px}
 .cal-table{width:100%;border-collapse:collapse;table-layout:fixed}.cal-table td,.cal-table th{padding:0;margin:0;text-align:center}.cal-table th{font-size:11px;font-weight:600;color:#9ca3af;padding:4px 0;width:14.28%}.cal-cell{width:14.28%;cursor:pointer;border:2px solid transparent;border-radius:6px;vertical-align:top}.cal-cell-inner{display:flex;flex-direction:column;align-items:center;padding:3px 1px;min-height:40px}
@@ -294,7 +294,7 @@ function fmtDate(d){if(!d)return"";var p=d.split("-");return MONTHS[+p[1]-1]+" "
 function fmtTime(h,m,ap){return String(+h||0).padStart(2,"0")+":"+String(+m||0).padStart(2,"0")+" "+ap;}
 function getHolidays(d){return ALL_HOLIDAYS.filter(function(h){return h.date===d;});}
 function getMC(ev){if(!ev)return"#888";if(ev.jobColor)return ev.jobColor;if(ev.type==="birthday")return"#ec4899";if(ev.type==="vacation")return"#3b82f6";var m=ev.members||[];if(!m.length)return"#888";if(m.length>1)return"#1a1a1a";return(MEMBERS[m[0]]&&MEMBERS[m[0]].color)||"#888";}
-function getML(ev){if(!ev)return"#e5e7eb";if(ev.jobColor)return ev.jobColor;if(ev.type==="birthday")return"#fce7f3";if(ev.type==="vacation")return"#dbeafe";var m=ev.members||[];if(!m.length)return"#e5e7eb";if(m.length>1)return"#f3f4f6";return(MEMBERS[m[0]]&&MEMBERS[m[0]].light)||"#e5e7eb";}
+function getML(ev){if(!ev)return"#e5e7eb";if(ev.jobColor)return"white";if(ev.type==="birthday")return"#fce7f3";if(ev.type==="vacation")return"#dbeafe";var m=ev.members||[];if(!m.length)return"#e5e7eb";if(m.length>1)return"#f3f4f6";return(MEMBERS[m[0]]&&MEMBERS[m[0]].light)||"#e5e7eb";}
 function isVacDay(d){return STATE.events.some(function(e){return e.type==="vacation"&&e.date&&e.endDate&&d>=e.date&&d<=e.endDate;});}
 function mapsLinks(loc){if(!loc)return"";var enc=encodeURIComponent(loc);return " <a href=\"https://maps.apple.com/?q="+enc+"\" class=\"map-link\" target=\"_blank\">Apple Maps</a> <a href=\"https://www.google.com/maps/search/"+enc+"\" class=\"map-link\" target=\"_blank\">Google Maps</a>";}
 function notifLabel(v){for(var i=0;i<NOTIF_OPTS.length;i++){if(NOTIF_OPTS[i].v===v)return NOTIF_OPTS[i].l;}return v+" min before";}
@@ -592,10 +592,8 @@ function eventCardHTML(ev,greyOut){
   var color=greyOut?"#9ca3af":getMC(ev),light=greyOut?"#f3f4f6":getML(ev);
   var isBday=ev.type==="birthday",pills="";
   var jobObj2=(ev.jobId&&STATE.jobs)?STATE.jobs.filter(function(j){return j.id===ev.jobId;})[0]:null;
-  var darkJobColors=["#1a1a1a","#6b7280","#7c2d12","#b91c1c","#ef4444","#15803d","#0e7490","#1d4ed8","#6d28d9","#9f1239","#78350f"];
-  var jobTextColor=jobObj2&&darkJobColors.indexOf(jobObj2.color)>=0?"white":"#1a1a1a";
   if(jobObj2){
-    pills+="<span class='pill' style='background:rgba(255,255,255,0.3);color:"+jobTextColor+";font-weight:600'>"+jobObj2.name+"</span>";
+    pills+="<span style='font-size:12px;font-weight:700;color:"+jobObj2.color+"'>"+jobObj2.name+"</span>";
   } else {
     (ev.members||[]).forEach(function(m){if(MEMBERS[m])pills+="<span class='pill' style='background:"+MEMBERS[m].color+";color:white'>"+MEMBERS[m].name+"</span>";});
   }
@@ -603,7 +601,7 @@ function eventCardHTML(ev,greyOut){
   var loc=ev.location?"<div style='font-size:12px;color:#6b7280;margin-top:2px'>"+ev.location+mapsLinks(ev.location)+"</div>":"";
   var notes=ev.notes?"<div style='font-size:12px;color:#6b7280;margin-top:4px;font-style:italic'>"+ev.notes+"</div>":"";
   var ts=isBday?"<div style='font-size:12px;color:#ec4899;margin-top:2px'>Yearly Birthday</div>":"<div style='font-size:12px;color:#6b7280;margin-top:2px'>"+fmtTime(ev.startH,ev.startM,ev.startAP)+" - "+fmtTime(ev.endH,ev.endM,ev.endAP)+"</div>";
-  return "<div class='event-card' style='background:"+light+";border-left-color:"+color+"'><div style='font-weight:600;font-size:14px'>"+(isBday?"&#127874; ":"")+ev.title+(greyOut?" <span style='color:#9ca3af;font-size:11px'>(conflict)</span>":"")+"</div>"+ts+loc+notes+"<div style='margin-top:4px'>"+pills+pb+"</div></div>";
+  return "<div class='event-card"+(ev.jobColor?" job-event":"")+"' style='background:"+light+";border-color:"+color+";"+(ev.jobColor?"":"")+"'><div style='font-weight:600;font-size:14px'>"+(isBday?"&#127874; ":"")+ev.title+(greyOut?" <span style='color:#9ca3af;font-size:11px'>(conflict)</span>":"")+"</div>"+ts+loc+notes+"<div style='margin-top:4px'>"+pills+pb+"</div></div>";
 }
 
 // ── HOME ─────────────────────────────────────────────────────────────────
