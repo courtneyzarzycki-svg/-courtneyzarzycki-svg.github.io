@@ -21,4 +21,4 @@ messaging.onBackgroundMessage((payload) => {
       icon: "/icon.png"
     }
   );
-});
+}); 
