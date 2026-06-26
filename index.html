@@ -89,6 +89,8 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
 .notif-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
 .notif-row select{flex:1}
 </style>
+  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging-compat.js"></script>
 </head>
 <body>
 
@@ -548,7 +550,8 @@ function loginAs(k){
   var bpull=document.createElement("button");bpull.style.cssText="background:#f3f4f6;border:1.5px solid #e5e7eb;border-radius:8px;padding:4px 8px;font-size:13px;cursor:pointer";bpull.innerHTML="&#8595;";bpull.onclick=function(){if(fbConfigured())fbPull();else showSyncSetup();};
   var bpush=document.createElement("button");bpush.style.cssText="background:#f3f4f6;border:1.5px solid #e5e7eb;border-radius:8px;padding:4px 8px;font-size:13px;cursor:pointer";bpush.innerHTML="&#8593;";bpush.onclick=function(){if(fbConfigured())fbPush();else showSyncSetup();};
   var bset=document.createElement("button");bset.style.cssText="background:#f3f4f6;border:1.5px solid #e5e7eb;border-radius:8px;padding:4px 8px;font-size:13px;cursor:pointer";bset.innerHTML="&#9881;";bset.onclick=showSyncSetup;
-  br.appendChild(stxt);br.appendChild(bpull);br.appendChild(bpush);br.appendChild(bset);
+  var btest=document.createElement("button");btest.style.cssText="background:#ede9fe;border:1.5px solid #c4b5fd;border-radius:8px;padding:4px 8px;font-size:10px;cursor:pointer;color:#6d28d9;font-weight:600";btest.textContent="FCM";btest.onclick=testFCM;
+  br.appendChild(stxt);br.appendChild(bpull);br.appendChild(bpush);br.appendChild(bset);br.appendChild(btest);
   bar.appendChild(bl);bar.appendChild(br);bar.style.display="flex";
   showTab("home");
   setTimeout(function(){if(!fbConfigured())showSyncSetup();},800);
@@ -1355,34 +1358,6 @@ function saveReminder(){
 function deleteReminder(id){confirmAction("Delete this reminder?",function(){STATE.reminders=STATE.reminders.filter(function(x){return x.id!==id;});STATE.reminders_work=(STATE.reminders_work||[]).filter(function(x){return x.id!==id;});save();closeModal("reminder-modal");renderReminders();});}
 
 // ── NOTIFICATIONS ────────────────────────────────────────────────────────
-function enableNotif(){
-  if(typeof Notification!=="undefined"){
-    Notification.requestPermission().then(function(p){
-      if(p==="granted"){STATE.notifEnabled=true;save();alert("Notifications enabled! You will receive pop-up alerts.");renderCurrentTab();}
-      else alert("To get notifications on iPhone/iPad:\n1. Open this page in Safari\n2. Tap Share\n3. Tap Add to Home Screen\n4. Open the app from your home screen\n5. Allow notifications when prompted");
-    });
-  } else alert("For notifications on iPhone/iPad:\n1. Open in Safari\n2. Tap Share > Add to Home Screen\n3. Open from home screen");
-}
-setInterval(function(){
-  if(!STATE.notifEnabled||typeof Notification==="undefined"||Notification.permission!=="granted")return;
-  var now=new Date(),nowMs=now.getTime();
-  var all=[].concat(STATE.events||[]).concat(STATE.reminders||[]);
-  all.forEach(function(item){
-    var notifs=item.notifications||[];if(item.notification)notifs=[item.notification];
-    notifs.forEach(function(mb){
-      if(!item.date)return;
-      var h=item.startH||item.h||12,m=item.startM||item.m||0,ap=item.startAP||item.ampm||"AM";
-      var hh=+h;if(ap==="PM"&&hh!==12)hh+=12;if(ap==="AM"&&hh===12)hh=0;
-      var itemMs=new Date(item.date+"T"+String(hh).padStart(2,"0")+":"+String(+m).padStart(2,"0")+":00").getTime();
-      var notifMs=itemMs-(mb*60000);
-      var key="n_"+item.id+"_"+mb;
-      if(nowMs>=notifMs&&nowMs<notifMs+60000&&!sessionStorage.getItem(key)){
-        new Notification("Family Hub",{body:(mb===0?"Now: ":(mb+" min: "))+item.title});
-        sessionStorage.setItem(key,"1");
-      }
-    });
-  });
-},60000);
 
 function confirmAction(msg,onConfirm){var el=document.getElementById("generic-modal-content");el.innerHTML="";var t=document.createElement("div");t.style.cssText="font-size:16px;font-weight:600;margin-bottom:16px;text-align:center";t.textContent=msg;var row=document.createElement("div");row.style.cssText="display:flex;gap:10px";var yes=document.createElement("button");yes.className="btn btn-danger";yes.style.flex="1";yes.textContent="Delete";yes.onclick=function(){closeModal("generic-modal");onConfirm();};var no=document.createElement("button");no.className="btn btn-secondary";no.style.flex="1";no.textContent="Cancel";no.onclick=function(){closeModal("generic-modal");};row.appendChild(yes);row.appendChild(no);el.appendChild(t);el.appendChild(row);document.getElementById("generic-modal").classList.add("open");}
 function showInfoModal(title,msg){var el=document.getElementById("generic-modal-content");el.innerHTML="";var t=document.createElement("div");t.style.cssText="font-weight:700;font-size:17px;margin-bottom:12px";t.textContent=title;var m=document.createElement("div");m.style.cssText="font-size:14px;color:#374151;margin-bottom:16px;line-height:1.5";m.textContent=msg;var btn=document.createElement("button");btn.className="btn btn-primary";btn.style.width="100%";btn.textContent="OK";btn.onclick=function(){closeModal("generic-modal");};el.appendChild(t);el.appendChild(m);el.appendChild(btn);document.getElementById("generic-modal").classList.add("open");}
@@ -1425,11 +1400,29 @@ function checkNotifications(){
 setInterval(checkNotifications,30000);
 setTimeout(checkNotifications,5000);
 
+
+function testFCM(){
+  var msg="";
+  msg+="firebase: "+(typeof firebase!=="undefined"?"OK":"MISSING")+"\n";
+  msg+="fcmMessaging: "+(fcmMessaging?"OK":"NULL")+"\n";
+  msg+="serviceWorker: "+("serviceWorker" in navigator?"OK":"NOT SUPPORTED")+"\n";
+  msg+="Notification: "+(typeof Notification!=="undefined"?Notification.permission:"NOT SUPPORTED")+"\n";
+  msg+="FB_URL: "+(FB_URL?"OK":"NOT SET")+"\n";
+  msg+="Saved token: "+(localStorage.getItem("fhub_fcm")?"YES":"NO");
+  showInfoModal("FCM Diagnostics",msg);
+}
 function enableNotif(){
   if(typeof Notification==="undefined"){showNotifGuide();return;}
-  if(Notification.permission==="granted"){STATE.notifEnabled=true;save();renderCurrentTab();try{new Notification("Family Hub",{body:"Notifications are on!"});}catch(e){}return;}
   if(Notification.permission==="denied"){showInfoModal("Notifications blocked","Go to Settings and allow notifications for this site, then tap Enable again.");return;}
-  Notification.requestPermission().then(function(p){if(p==="granted"){STATE.notifEnabled=true;save();renderCurrentTab();try{new Notification("Family Hub",{body:"Notifications are on! You will get alerts for events and reminders.",requireInteraction:false});}catch(e){}checkNotifications();}else{showNotifGuide();}}).catch(function(){showNotifGuide();});
+  Notification.requestPermission().then(function(p){
+    if(p==="granted"){
+      STATE.notifEnabled=true;save();renderCurrentTab();
+      registerFCMToken().then(function(token){
+        if(token){showInfoModal("Notifications enabled!","You will now receive locked screen alerts.");}
+        else{try{new Notification("Family Hub",{body:"Notifications are on!"});}catch(e){}}
+      });
+    }else{showNotifGuide();}
+  }).catch(function(){showNotifGuide();});
 }
 function showNotifGuide(){
   var el=document.getElementById("generic-modal-content");el.innerHTML="";
@@ -1445,6 +1438,57 @@ function openGeneric(html){document.getElementById("generic-modal-content").inne
 function closeModal(id){document.getElementById(id).classList.remove("open");}
 
 try{var fu=localStorage.getItem("fhub_fburl");if(fu)FB_URL=fu;}catch(e){}
+
+// FCM Setup - init immediately, don't wait for load event
+var fcmApp=null,fcmMessaging=null;
+function initFCM(){
+  try{
+    if(typeof firebase==="undefined")return;
+    if(!firebase.apps.length){
+      fcmApp=firebase.initializeApp({
+        apiKey:"AIzaSyA6hEEmGv3X0L5sQbZP2YYUQu-sixDqsPM",
+        authDomain:"family-hub-2-4a707.firebaseapp.com",
+        databaseURL:"https://family-hub-2-4a707-default-rtdb.firebaseio.com",
+        projectId:"family-hub-2-4a707",
+        storageBucket:"family-hub-2-4a707.firebasestorage.app",
+        messagingSenderId:"533379938918",
+        appId:"1:533379938918:web:949fbd193d22ff5b074ba7"
+      });
+    } else {
+      fcmApp=firebase.apps[0];
+    }
+    fcmMessaging=firebase.messaging();
+  }catch(e){console.log("FCM init error:",e.message);}
+}
+initFCM();
+
+async function registerFCMToken(){
+  try{
+    if(!fcmMessaging){
+      showInfoModal("FCM not ready","Firebase messaging not initialized. Make sure you are on the Home Screen app.");
+      return null;
+    }
+    var swReg=await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+    var token=await fcmMessaging.getToken({
+      vapidKey:"BLuv5J3H0LpdaJ8VYgCVPCRqtsNK2ng1KIDuFMed4Zp8i0s5Gq36t7fHrOAsbQvjrIgLacpJjMvOKZwtqm_LtxQ",
+      serviceWorkerRegistration:swReg
+    });
+    if(token){
+      var xhr=new XMLHttpRequest();
+      xhr.open("PUT",FB_URL+"/fcmTokens/"+btoa(token).replace(/[^a-zA-Z0-9]/g,"").slice(0,20)+".json",true);
+      xhr.setRequestHeader("Content-Type","application/json");
+      xhr.send(JSON.stringify({token:token,updated:new Date().toISOString()}));
+      localStorage.setItem("fhub_fcm",token);
+      return token;
+    } else {
+      showInfoModal("Token failed","Got empty token from Firebase. Try removing and re-adding from Home Screen.");
+      return null;
+    }
+  }catch(e){
+    showInfoModal("FCM Error",e.message||"Unknown error registering for notifications.");
+    return null;
+  }
+}
 
 
 if(fbConfigured()){fbPull(function(){startSync();});}
