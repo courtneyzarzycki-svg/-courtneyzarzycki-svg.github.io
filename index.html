@@ -1002,7 +1002,6 @@ function renderTaskContent(){
       var clL=document.createElement("div");clL.style.cssText="font-size:12px;font-weight:500;color:#6b7280;margin-bottom:8px";clL.textContent="Colour";
       var clGrid=document.createElement("div");clGrid.style.cssText="display:grid;grid-template-columns:repeat(5,1fr);gap:8px";
       var selectedColor=JOB_COLORS[0][0];
-      var clLbl=document.createElement("div");clLbl.id="job-color-lbl";clLbl.style.cssText="font-size:11px;color:#6b7280;margin-bottom:6px;height:16px;text-align:center";clLbl.textContent=JOB_COLORS[0][1];cl.insertBefore(clLbl,clGrid);
       JOB_COLORS.forEach(function(col,i){
         var colorVal=col[0],colorName=col[1];
         var swatch=document.createElement("div");
@@ -1015,7 +1014,9 @@ function renderTaskContent(){
         };})(colorVal,colorName,i);
         clGrid.appendChild(swatch);
       });
-      cl.appendChild(clL);cl.appendChild(clGrid);form.appendChild(cl);
+      cl.appendChild(clL);cl.appendChild(clGrid);
+      var clLbl=document.createElement("div");clLbl.id="job-color-lbl";clLbl.style.cssText="font-size:11px;color:#6b7280;margin-top:6px;height:16px;text-align:center";clLbl.textContent=JOB_COLORS[0][1];cl.appendChild(clLbl);
+      form.appendChild(cl);
       // Buttons
       var btnRow=document.createElement("div");btnRow.style.cssText="display:flex;gap:8px;margin-top:4px";
       var saveBtn=document.createElement("button");saveBtn.className="btn btn-primary";saveBtn.style.flex="1";saveBtn.textContent="Add Job";
