@@ -1418,23 +1418,28 @@ initLogin();
 </html> 
 
 async function getFCMToken() {
-  document.body.innerHTML += "<p>STEP 1: function started</p>";
-
   try {
-    const swReg = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
-    document.body.innerHTML += "<p>STEP 2: SW registered</p>";
-
     const token = await getToken(messaging, {
-      vapidKey: "BLuv5J3H0LpdaJ8VYgCVPCRqtsNK2ng1KIDuFMed4Zp8i0s5Gq36t7fHrOAsbQvjrIgLacpJjMvOKZwtqm_LtxQ",
-      serviceWorkerRegistration: swReg
+      vapidKey: "BLuv5J3H0LpdaJ8VYgCVPCRqtsNK2ng1KIDuFMed4Zp8i0s5Gq36t7fHrOAsbQvjrIgLacpJjMvOKZwtqm_LtxQ"
     });
 
-    document.body.innerHTML += "<p>STEP 3: TOKEN RECEIVED</p>";
-    document.body.innerHTML += "<p>" + token + "</p>";
+    await set(ref(db, "devices/iphone1"), token);
+
+    document.body.innerHTML += `
+      <div style="padding:10px; word-break:break-all;">
+        <h3>FCM TOKEN:</h3>
+        <p>${token}</p>
+        <p>TOKEN SAVED</p>
+      </div>
+    `;
 
   } catch (err) {
-    document.body.innerHTML += "<p>ERROR: " + err.message + "</p>";
+    document.body.innerHTML += `<p>ERROR: ${err.message}</p>`;
   }
 }
 
 getFCMToken();
+
+
+
+
