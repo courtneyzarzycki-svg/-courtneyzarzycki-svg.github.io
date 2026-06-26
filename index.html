@@ -1415,4 +1415,23 @@ if(fbConfigured()){fbPull(function(){startSync();});}
 initLogin();
 </script>
 </body>
-</html>
+</html> 
+
+async function getFCMToken() {
+  try {
+    const token = await getToken(messaging, {
+      vapidKey: "YOUR_VAPID_KEY"
+    });
+
+    document.body.innerHTML += `
+      <div style="padding:10px; word-break:break-all;">
+        <h3>FCM TOKEN:</h3>
+        <p>${token}</p>
+      </div>
+    `;
+  } catch (err) {
+    document.body.innerHTML += `<p>ERROR: ${err.message}</p>`;
+  }
+}
+
+getFCMToken();
