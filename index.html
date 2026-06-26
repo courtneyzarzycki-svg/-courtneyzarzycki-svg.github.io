@@ -52,11 +52,11 @@ textarea{resize:none;min-height:70px}
 .toggle-slider:before{content:'';position:absolute;height:20px;width:20px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.2s}
 input:checked+.toggle-slider{background:#6366f1}
 input:checked+.toggle-slider:before{transform:translateX(20px)}
-#login-screen{position:fixed;inset:0;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;z-index:500;-webkit-user-select:none;touch-action:manipulation}
-.pin-btn{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.1);color:white;font-size:20px;font-weight:500;cursor:pointer;font-family:inherit;touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,255,255,0.3)}
+#login-screen{position:fixed;inset:0;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;z-index:500}
+.pin-btn{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.1);color:white;font-size:20px;font-weight:500;cursor:pointer;font-family:inherit}
 .pin-dot{width:13px;height:13px;border-radius:50%;background:rgba(255,255,255,0.3);transition:all .15s}
 .pin-dot.filled{background:white}
-.member-login-btn{background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.15);border-radius:14px;padding:20px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;transition:all .2s;width:100%;font-family:inherit;touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,255,255,0.2)}
+.member-login-btn{background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.15);border-radius:14px;padding:20px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;transition:all .2s;width:100%;font-family:inherit}
 .work-bar{display:flex;align-items:center;gap:10px;background:white;border-radius:12px;padding:8px 14px;margin:10px 14px 0;box-shadow:0 1px 4px rgba(0,0,0,.07)}
 .store-tab{background:white;border:1.5px solid #e5e7eb;border-radius:20px;padding:6px 14px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;flex-shrink:0}
 .store-tab.active{background:#1a1a1a;color:white;border-color:#1a1a1a}
@@ -89,8 +89,6 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
 .notif-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
 .notif-row select{flex:1}
 </style>
-  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging-compat.js"></script>
 </head>
 <body>
 
@@ -296,17 +294,7 @@ function fmtDate(d){if(!d)return"";var p=d.split("-");return MONTHS[+p[1]-1]+" "
 function fmtTime(h,m,ap){return String(+h||0).padStart(2,"0")+":"+String(+m||0).padStart(2,"0")+" "+ap;}
 function getHolidays(d){return ALL_HOLIDAYS.filter(function(h){return h.date===d;});}
 function getMC(ev){if(!ev)return"#888";if(ev.jobColor)return ev.jobColor;if(ev.type==="birthday")return"#ec4899";if(ev.type==="vacation")return"#3b82f6";var m=ev.members||[];if(!m.length)return"#888";if(m.length>1)return"#1a1a1a";return(MEMBERS[m[0]]&&MEMBERS[m[0]].color)||"#888";}
-function getML(ev){
-  if(!ev)return"#e5e7eb";
-  if(ev.jobColor){
-    // Create a light version of the job colour
-    return ev.jobColor+"22";
-  }
-  if(ev.type==="birthday")return"#fce7f3";
-  if(ev.type==="vacation")return"#dbeafe";
-  var m=ev.members||[];if(!m.length)return"#e5e7eb";if(m.length>1)return"#f3f4f6";
-  return(MEMBERS[m[0]]&&MEMBERS[m[0]].light)||"#e5e7eb";
-}
+function getML(ev){if(!ev)return"#e5e7eb";if(ev.type==="birthday")return"#fce7f3";if(ev.type==="vacation")return"#dbeafe";var m=ev.members||[];if(!m.length)return"#e5e7eb";if(m.length>1)return"#f3f4f6";return(MEMBERS[m[0]]&&MEMBERS[m[0]].light)||"#e5e7eb";}
 function isVacDay(d){return STATE.events.some(function(e){return e.type==="vacation"&&e.date&&e.endDate&&d>=e.date&&d<=e.endDate;});}
 function mapsLinks(loc){if(!loc)return"";var enc=encodeURIComponent(loc);return " <a href=\"https://maps.apple.com/?q="+enc+"\" class=\"map-link\" target=\"_blank\">Apple Maps</a> <a href=\"https://www.google.com/maps/search/"+enc+"\" class=\"map-link\" target=\"_blank\">Google Maps</a>";}
 function notifLabel(v){for(var i=0;i<NOTIF_OPTS.length;i++){if(NOTIF_OPTS[i].v===v)return NOTIF_OPTS[i].l;}return v+" min before";}
@@ -516,18 +504,13 @@ function initLogin(){
   Object.keys(MEMBERS).forEach(function(k){
     var m=MEMBERS[k],b=document.createElement("button");b.className="member-login-btn";
     b.innerHTML="<div style='width:60px;height:60px;border-radius:50%;background:"+m.color+";display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;color:white'>"+m.initials+"</div><span style='color:white;font-size:17px;font-weight:600'>"+m.name+"</span>";
-    b.onclick=(function(kk){return function(){selectMember(kk);};})(k);
-    b.addEventListener("touchend",function(e){e.preventDefault();selectMember(k);},{passive:false});
-    mb.appendChild(b);
+    b.onclick=(function(kk){return function(){selectMember(kk);};})(k);mb.appendChild(b);
   });
   var pp=document.getElementById("pin-pad");pp.innerHTML="";
   [1,2,3,4,5,6,7,8,9,"",0,"<"].forEach(function(n){
     if(n===""){pp.appendChild(document.createElement("div"));return;}
     var b=document.createElement("button");b.className="pin-btn";b.textContent=n==="<"?"\u232B":n;
-    var pinHandler=n==="<"?pinDel:(function(nn){return function(){pinTap(String(nn));};})(n);
-    b.onclick=pinHandler;
-    b.addEventListener("touchend",function(e){e.preventDefault();pinHandler();},{passive:false});
-    pp.appendChild(b);
+    b.onclick=n==="<"?pinDel:(function(nn){return function(){pinTap(String(nn));};})(n);pp.appendChild(b);
   });
   initCalDropdowns();
 }
@@ -605,44 +588,68 @@ function getVisibleReminders(){
     return false;
   });
 }
-function eventCardHTML(ev,greyOut,conflict){
+function eventCardHTML(ev,greyOut){
   var color=greyOut?"#9ca3af":getMC(ev),light=greyOut?"#f3f4f6":getML(ev);
   var isBday=ev.type==="birthday",pills="";
-  var jobObj=(ev.jobId&&STATE.jobs)?STATE.jobs.filter(function(j){return j.id===ev.jobId;})[0]:null;
-  if(jobObj){
-    pills+="<span class='pill' style='background:"+jobObj.color+";color:white;font-weight:600'>"+jobObj.name+"</span>";
-  } else {
-    (ev.members||[]).forEach(function(m){if(MEMBERS[m])pills+="<span class='pill' style='background:"+MEMBERS[m].color+";color:white'>"+MEMBERS[m].name+"</span>";});
-  }
+  (ev.members||[]).forEach(function(m){if(MEMBERS[m])pills+="<span class='pill' style='background:"+MEMBERS[m].color+";color:white'>"+MEMBERS[m].name+"</span>";});
   var pb="";if(ev.parent){var pn=ev.parent==="both"?"Mike & Courtney attending":(MEMBERS[ev.parent]?MEMBERS[ev.parent].name+" attending":ev.parent+" attending");pb="<span class='pill' style='background:#e5e7eb;color:#374151'>"+pn+"</span>";}
   var loc=ev.location?"<div style='font-size:12px;color:#6b7280;margin-top:2px'>"+ev.location+mapsLinks(ev.location)+"</div>":"";
   var notes=ev.notes?"<div style='font-size:12px;color:#6b7280;margin-top:4px;font-style:italic'>"+ev.notes+"</div>":"";
   var ts=isBday?"<div style='font-size:12px;color:#ec4899;margin-top:2px'>Yearly Birthday</div>":"<div style='font-size:12px;color:#6b7280;margin-top:2px'>"+fmtTime(ev.startH,ev.startM,ev.startAP)+" - "+fmtTime(ev.endH,ev.endM,ev.endAP)+"</div>";
-  var cb=conflict?"<span style='background:#fee2e2;color:#b91c1c;border-radius:6px;padding:1px 6px;font-size:10px;font-weight:600;margin-left:4px'>Family conflict</span>":"";
-  return "<div class='event-card' style='background:"+light+";border-left-color:"+color+"'><div style='font-weight:600;font-size:14px'>"+(isBday?"&#127874; ":"")+ev.title+cb+"</div>"+ts+loc+notes+"<div style='margin-top:4px'>"+pills+pb+"</div></div>";
+  return "<div class='event-card' style='background:"+light+";border-left-color:"+color+"'><div style='font-weight:600;font-size:14px'>"+(isBday?"&#127874; ":"")+ev.title+(greyOut?" <span style='color:#9ca3af;font-size:11px'>(conflict)</span>":"")+"</div>"+ts+loc+notes+"<div style='margin-top:4px'>"+pills+pb+"</div></div>";
 }
 
+// ── HOME ─────────────────────────────────────────────────────────────────
 function renderHome(){
   var isAdmin=MEMBERS[currentUser]&&MEMBERS[currentUser].admin,t=today(),hr=new Date().getHours();
   document.getElementById("home-date").textContent=new Date().toLocaleDateString("en-CA",{weekday:"long",month:"long",day:"numeric"});
   document.getElementById("home-greeting").textContent=(hr<12?"Good morning":hr<17?"Good afternoon":"Good evening")+", "+MEMBERS[currentUser].name+"!";
-  var hols=getHolidays(t),hh="";hols.forEach(function(h){hh+="<div style=\"background:#fef9c3;border:1.5px solid #ca8a04;border-radius:12px;padding:10px 14px;margin-bottom:8px;display:flex;gap:8px;align-items:center\"><span>&#127881;</span><span style=\"font-size:13px;font-weight:500;color:#92400e\">"+h.name+"</span></div>";});
+  var hols=getHolidays(t),hh="";hols.forEach(function(h){hh+="<div style='background:#fef9c3;border:1.5px solid #ca8a04;border-radius:12px;padding:10px 14px;margin-bottom:8px;display:flex;gap:8px;align-items:center'><span>&#127881;</span><span style='font-size:13px;font-weight:500;color:#92400e'>"+h.name+"</span></div>";});
   document.getElementById("home-holiday").innerHTML=hh;
-  document.getElementById("home-notif-banner").innerHTML=!STATE.notifEnabled?"<div class=\"notif-banner\"><div style=\"display:flex;align-items:center;justify-content:space-between\"><div><div style=\"font-size:13px;font-weight:600;color:#1d4ed8\">Enable notifications</div><div style=\"font-size:11px;color:#3b82f6;margin-top:1px\">Pop-up alerts on your device</div></div><button class=\"btn btn-primary btn-sm\" onclick=\"enableNotif()\">Enable</button></div></div>":"";
-  var evs=(workMode?STATE.events_work:STATE.events).filter(function(e){return isAdmin||((e.members||[]).indexOf(currentUser)>=0);}).filter(function(e){return eventOccursOn(e,t);});
-  document.getElementById("home-events").innerHTML=evs.length?evs.map(eventCardHTML).join(""):"<div class=\"card\" style=\"text-align:center;color:#9ca3af;font-size:13px;padding:16px\">No events today</div>";
-  var rems=getVisibleReminders().filter(function(r){return !r.completed;}),rh="";
-  rems.forEach(function(r){rh+="<div class=\"card\" style=\"display:flex;align-items:center;gap:10px;padding:10px 14px\"><div class=\"checkbox\" onclick=\"completeReminder('"+r.id+"')\"></div><div><div style=\"font-size:14px;font-weight:500\">"+r.title+"</div><div style=\"font-size:11px;color:#9ca3af\">"+fmtDate(r.date)+" - "+fmtTime(r.h,r.m,r.ampm)+"</div></div></div>";});
-  if(!rems.length)rh="<div class=\"card\" style=\"text-align:center;color:#9ca3af;font-size:13px;padding:16px\">No pending reminders</div>";
+  var notifGranted=typeof Notification!=="undefined"&&Notification.permission==="granted";
+  if(notifGranted&&!STATE.notifEnabled){STATE.notifEnabled=true;}
+  document.getElementById("home-notif-banner").innerHTML=notifGranted?"":"<div class='notif-banner'><div class='row-between'><div><div style='font-size:13px;font-weight:600;color:#1d4ed8'>Enable notifications</div></div><button class='btn btn-primary btn-sm' onclick='enableNotif()'>Enable</button></div></div>";
+  var evs=(workMode?STATE.events_work:STATE.events).filter(function(e){return true;}).filter(function(e){return eventOccursOn(e,t);});
+  document.getElementById("home-events").innerHTML=evs.length?evs.map(eventCardHTML).join(""):"<div class='card' style='text-align:center;color:#9ca3af;font-size:13px;padding:16px'>No events today</div>";
+  var t2=today();var rems=getVisibleReminders().filter(function(r){return !r.completed&&r.date<=t2;}),rh="";
+  rems.forEach(function(r){rh+="<div class='card' style='display:flex;align-items:center;gap:10px;padding:10px 14px'><div class='checkbox' onclick=\"completeReminder('"+r.id+"')\"></div><div><div style='font-size:14px;font-weight:500'>"+r.title+"</div><div style='font-size:11px;color:#9ca3af'>"+fmtDate(r.date)+" - "+fmtTime(r.h,r.m,r.ampm)+"</div></div></div>";});
+  if(!rems.length)rh="<div class='card' style='text-align:center;color:#9ca3af;font-size:13px;padding:16px'>No pending reminders</div>";
   document.getElementById("home-reminders").innerHTML=rh;
-  var allC=[],ch="";Object.keys(STATE.chores||{}).forEach(function(mk){(STATE.chores[mk]||[]).forEach(function(c){if((c.assigned||[]).indexOf(currentUser)>=0||(isAdmin&&MEMBERS[mk]&&MEMBERS[mk].child))allC.push(c);});});
-  allC.filter(function(c){return !c.completed;}).slice(0,4).forEach(function(c){var p="";(c.assigned||[]).forEach(function(m){if(MEMBERS[m])p+="<span class=\"pill\" style=\"background:"+MEMBERS[m].color+";color:white\">"+MEMBERS[m].name+"</span>";});ch+="<div class=\"card\" style=\"padding:10px 14px;display:flex;align-items:center;gap:10px\"><div style=\"flex:1;font-size:14px\">"+c.text+"</div><div>"+p+"</div></div>";});
-  if(!ch)ch="<div class=\"card\" style=\"text-align:center;color:#9ca3af;font-size:13px;padding:16px\">No chores today</div>";
-  document.getElementById("home-chores").innerHTML=ch;
+  // Kids only see their own chores on home page
+  var allC=[],ch="";
+  var choreSection=document.getElementById("home-chores").parentNode;
+  if(isAdmin){
+    choreSection.style.display="none";
+  } else {
+    choreSection.style.display="block";
+    Object.keys(STATE.chores||{}).forEach(function(mk){(STATE.chores[mk]||[]).forEach(function(c){if((c.assigned||[]).indexOf(currentUser)>=0)allC.push(c);});});
+    allC.filter(function(c){return !c.completed;}).slice(0,4).forEach(function(c){ch+="<div class='card' style='padding:10px 14px;font-size:14px'>"+c.text+(c.rewardPts?" <span style='font-size:11px;color:#f59e0b'>+"+c.rewardPts+" pts</span>":"")+"</div>";});
+    if(!ch)ch="<div class='card' style='text-align:center;color:#9ca3af;font-size:13px;padding:16px'>No chores today</div>";
+    document.getElementById("home-chores").innerHTML=ch;
+  }
+  // To-Dos on home page
+  var myTodos=(workMode?STATE.todos_work:STATE.todos).filter(function(t){return !t.completed&&(t.assigned||[]).indexOf(currentUser)>=0;});
+  if(myTodos.length){
+    var todosEl=document.getElementById("home-todos");
+    if(!todosEl){
+      var tSection=document.createElement("div");tSection.style.marginBottom="16px";
+      var tTitle=document.createElement("div");tTitle.className="section-title";tTitle.textContent="My To-Dos";
+      var tList=document.createElement("div");tList.id="home-todos";
+      tSection.appendChild(tTitle);tSection.appendChild(tList);
+      document.getElementById("home-chores").parentNode.insertBefore(tSection,document.getElementById("home-chores").nextSibling);
+      todosEl=tList;
+    }
+    var tHtml="";
+    myTodos.forEach(function(t){tHtml+="<div class='card' style='padding:10px 14px;font-size:14px'>"+t.text+"</div>";});
+    todosEl.innerHTML=tHtml;
+  } else {
+    var todosEl2=document.getElementById("home-todos");
+    if(todosEl2)todosEl2.parentNode.style.display="none";
+  }
   if(!workMode){var dn=new Date().toLocaleDateString("en-US",{weekday:"long"}),meal=STATE.meals[dn];var mw=document.getElementById("home-meal-wrap");if(meal){mw.style.display="block";document.getElementById("home-meal").textContent=meal;}else mw.style.display="none";}
 }
 
-// CALENDAR
+// ── CALENDAR ────────────────────────────────────────────────────────────
 function initCalDropdowns(){
   var ms=document.getElementById("cal-month-sel"),ys=document.getElementById("cal-year-sel");
   if(ms&&!ms.options.length)MONTHS.forEach(function(m,i){var o=document.createElement("option");o.value=i;o.textContent=m;ms.appendChild(o);});
@@ -652,53 +659,39 @@ function initCalDropdowns(){
 }
 function calJump(){var ms=document.getElementById("cal-month-sel"),ys=document.getElementById("cal-year-sel");if(ms)calMonth=+ms.value;if(ys)calYear=+ys.value;renderCalendar();}
 function calNav(dir){calMonth+=dir;if(calMonth>11){calMonth=0;calYear++;}else if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
+
 function renderCalendar(){
-  var isAdmin=MEMBERS[currentUser]&&MEMBERS[currentUser].admin;
   document.getElementById("cal-mode-label").textContent=workMode?"Work Calendar":"Family Calendar";
   var ms=document.getElementById("cal-month-sel"),ys=document.getElementById("cal-year-sel");if(ms)ms.value=calMonth;if(ys)ys.value=calYear;
-  document.getElementById("cal-notif-banner").innerHTML=!STATE.notifEnabled?"<div class=\"notif-banner\" style=\"margin-bottom:8px\"><div style=\"display:flex;align-items:center;justify-content:space-between\"><div style=\"font-size:12px;font-weight:600;color:#1d4ed8\">Enable notifications</div><button class=\"btn btn-primary btn-sm\" onclick=\"enableNotif()\">Enable</button></div></div>":"";
-  var hdrHtml="";DSHORT.forEach(function(d){hdrHtml+="<div style=\"text-align:center;font-size:10px;font-weight:600;color:#9ca3af;padding:3px 0\">"+d+"</div>";});
-  document.getElementById("cal-header").innerHTML=hdrHtml;
-  var first=new Date(calYear,calMonth,1).getDay(),daysN=new Date(calYear,calMonth+1,0).getDate();
-  var famEvs=STATE.events.filter(function(e){return isAdmin||((e.members||[]).indexOf(currentUser)>=0);});
-  var allEvs=workMode?(STATE.events_work||[]):famEvs;
-  var body=document.getElementById("cal-body");body.innerHTML="";
-  for(var i=0;i<first;i++)body.appendChild(document.createElement("div"));
+  document.getElementById("cal-notif-banner").innerHTML=!STATE.notifEnabled?"<div class='notif-banner' style='margin-bottom:8px'><div class='row-between'><div style='font-size:12px;font-weight:600;color:#1d4ed8'>Enable notifications</div><button class='btn btn-primary btn-sm' onclick='enableNotif()'>Enable</button></div></div>":"";
+  var famAllEvs=STATE.events;
+  var workAllEvs=(STATE.events_work||[]).concat(STATE.events.filter(function(e){return e.type==="vacation"&&(e.members||[]).indexOf("mike")>=0;}));
+  var allEvs=workMode?workAllEvs:famAllEvs;
+  var hdr=document.getElementById("cal-header");hdr.innerHTML="";
+  ["Su","Mo","Tu","We","Th","Fr","Sa"].forEach(function(d){var th=document.createElement("th");th.textContent=d;hdr.appendChild(th);});
+  var tbody=document.getElementById("cal-body");tbody.innerHTML="";
+  var first=new Date(calYear,calMonth,1).getDay(),daysN=new Date(calYear,calMonth+1,0).getDate(),dayCount=0,tr=document.createElement("tr");
+  for(var i=0;i<first;i++){tr.appendChild(document.createElement("td"));dayCount++;}
   for(var d=1;d<=daysN;d++){
-    (function(dd){
+    (function(dd,tr_ref,dc){
       var ds=calYear+"-"+String(calMonth+1).padStart(2,"0")+"-"+String(dd).padStart(2,"0");
-      var hols=getHolidays(ds),hasStat=hols.some(function(h){return h.stat;}),hasHol=hols.length>0;
-      var vac=isVacDay(ds),devs=allEvs.filter(function(e){return eventOccursOn(e,ds);});
-      var isToday=ds===today(),isSel=ds===calSel;
-      // Vacation bg takes priority over stat holiday yellow
+      var hols=getHolidays(ds),hasHol=hols.length>0,hasStat=hols.some(function(h){return h.stat;}),vac=isVacDay(ds);
+      var devs=allEvs.filter(function(e){return eventOccursOn(e,ds);});
+      var isToday2=ds===today(),isSel=ds===calSel;
       var bg=isSel?"#eff6ff":vac?"#dbeafe":hasStat?"#fefce8":"transparent";
-      var cell=document.createElement("div");cell.className="cal-cell";cell.style.background=bg;cell.style.borderColor=isSel?"#6366f1":"transparent";
-      var dots="";if(hasHol)dots+="<div class=\"cal-dot\" style=\"background:#ca8a04\"></div>";
-      devs.slice(0,3).forEach(function(e){dots+="<div class=\"cal-dot\" style=\"background:"+getMC(e)+"\"></div>";});
-      cell.innerHTML="<div class=\"cal-num\" style=\"background:"+(isToday?"#6366f1":"transparent")+";color:"+(isToday?"white":hasHol?"#92400e":"inherit")+";font-weight:"+(isToday||isSel?700:400)+"\">"+dd+"</div><div style=\"display:flex;flex-wrap:wrap;justify-content:center;gap:1px;margin-top:1px\">"+dots+"</div>";
-      cell.onclick=function(){calSel=ds;renderCalendar();};
-      body.appendChild(cell);
-    })(d);
+      var dots="";if(hasHol)dots+="<div class='cal-dot' style='background:#ca8a04'></div>";
+      devs.slice(0,3).forEach(function(e){dots+="<div class='cal-dot' style='background:"+getMC(e)+"'></div>";});
+      var td=document.createElement("td");td.className="cal-cell";td.style.borderColor=isSel?"#6366f1":"transparent";
+      td.innerHTML="<div class='cal-cell-inner' style='background:"+bg+"'><div class='cal-num' style='background:"+(isToday2?"#6366f1":"transparent")+";color:"+(isToday2?"white":hasHol?"#92400e":"#1a1a1a")+";font-weight:"+(isToday2||isSel?700:400)+"'>"+dd+"</div>"+(dots?"<div class='cal-dots'>"+dots+"</div>":"")+"</div>";
+      td.onclick=function(){calSel=ds;renderCalendar();};tr_ref.appendChild(td);
+      if((dc+1)%7===0){tbody.appendChild(tr_ref);if(dd<daysN)tr_ref=document.createElement("tr");}
+      else if(dd===daysN){var rem2=6-(dc%7);for(var r2=0;r2<rem2;r2++)tr_ref.appendChild(document.createElement("td"));tbody.appendChild(tr_ref);}
+    })(d,tr,dayCount);
+    dayCount++;if(dayCount%7===0&&d<daysN)tr=document.createElement("tr");
   }
   renderCalDay();
 }
-function renderCalDay(){
-  var isAdmin=MEMBERS[currentUser]&&MEMBERS[currentUser].admin;
-  var hols=getHolidays(calSel);
-  var famEvs=STATE.events.filter(function(e){return isAdmin||((e.members||[]).indexOf(currentUser)>=0);});
-  var allEvs=workMode?(STATE.events_work||[]):famEvs;
-  var devs=allEvs.filter(function(e){return eventOccursOn(e,calSel);});
-  var conflicts=workMode?famEvs.filter(function(e){return eventOccursOn(e,calSel)&&((e.members||[]).indexOf("mike")>=0||e.parent==="mike"||e.parent==="both");}):[];
-  var fh=hols[0]||null;
-  var html="<div style=\"display:flex;align-items:center;justify-content:space-between;margin-bottom:8px\"><div style=\"font-weight:600;font-size:14px\">"+fmtDate(calSel)+"</div>"+(fh?"<span style=\"background:#fef9c3;color:#92400e;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:600\">"+fh.name+"</span>":"")+"</div>";
-  hols.forEach(function(h){html+="<div class=\"event-card\" style=\"background:#fef9c3;border-left-color:#ca8a04\"><div style=\"font-weight:600;font-size:14px;color:#92400e\">"+h.name+"</div></div>";});
-  devs.forEach(function(e){html+="<div onclick=\"openEventModal('"+e.id+"')\" style=\"cursor:pointer\">"+eventCardHTML(e)+"</div>";});
-  if(workMode&&conflicts.length){html+="<div style=\"margin-top:8px\"><div class=\"section-title\">Mike's Family Conflicts</div>";conflicts.forEach(function(e){html+=eventCardHTML(e,true);});html+="</div>";}
-  if(!devs.length&&!hols.length)html+="<div style=\"text-align:center;color:#9ca3af;font-size:13px;padding:16px 0\">No events - tap + to add</div>";
-  document.getElementById("cal-day-events").innerHTML=html;
-}
 
-// EVENT MODAL
 function eventsOverlap(a,b){
   function tm(h,m,ap){var hh=+h;if(ap==="PM"&&hh!==12)hh+=12;if(ap==="AM"&&hh===12)hh=0;return hh*60+(+m);}
   var as2=tm(a.startH,a.startM,a.startAP),ae=tm(a.endH,a.endM,a.endAP);
@@ -1327,23 +1320,80 @@ function deleteReminder(id){confirmAction("Delete this reminder?",function(){STA
 
 // ── NOTIFICATIONS ────────────────────────────────────────────────────────
 function enableNotif(){
-  if(fcmMessaging){
-    getFCMToken().then(function(token){
-      if(token){
-        showInfoModal("Notifications enabled!","You will now receive alerts on your locked screen.");
-      } else {
-        showNotifGuide();
+  if(typeof Notification!=="undefined"){
+    Notification.requestPermission().then(function(p){
+      if(p==="granted"){STATE.notifEnabled=true;save();alert("Notifications enabled! You will receive pop-up alerts.");renderCurrentTab();}
+      else alert("To get notifications on iPhone/iPad:\n1. Open this page in Safari\n2. Tap Share\n3. Tap Add to Home Screen\n4. Open the app from your home screen\n5. Allow notifications when prompted");
+    });
+  } else alert("For notifications on iPhone/iPad:\n1. Open in Safari\n2. Tap Share > Add to Home Screen\n3. Open from home screen");
+}
+setInterval(function(){
+  if(!STATE.notifEnabled||typeof Notification==="undefined"||Notification.permission!=="granted")return;
+  var now=new Date(),nowMs=now.getTime();
+  var all=[].concat(STATE.events||[]).concat(STATE.reminders||[]);
+  all.forEach(function(item){
+    var notifs=item.notifications||[];if(item.notification)notifs=[item.notification];
+    notifs.forEach(function(mb){
+      if(!item.date)return;
+      var h=item.startH||item.h||12,m=item.startM||item.m||0,ap=item.startAP||item.ampm||"AM";
+      var hh=+h;if(ap==="PM"&&hh!==12)hh+=12;if(ap==="AM"&&hh===12)hh=0;
+      var itemMs=new Date(item.date+"T"+String(hh).padStart(2,"0")+":"+String(+m).padStart(2,"0")+":00").getTime();
+      var notifMs=itemMs-(mb*60000);
+      var key="n_"+item.id+"_"+mb;
+      if(nowMs>=notifMs&&nowMs<notifMs+60000&&!sessionStorage.getItem(key)){
+        new Notification("Family Hub",{body:(mb===0?"Now: ":(mb+" min: "))+item.title});
+        sessionStorage.setItem(key,"1");
       }
     });
-  } else {
-    // Fallback to basic notifications
-    if(typeof Notification==="undefined"){showNotifGuide();return;}
-    if(Notification.permission==="granted"){STATE.notifEnabled=true;save();renderCurrentTab();return;}
-    Notification.requestPermission().then(function(p){
-      if(p==="granted"){STATE.notifEnabled=true;save();renderCurrentTab();}
-      else{showNotifGuide();}
+  });
+},60000);
+
+function confirmAction(msg,onConfirm){var el=document.getElementById("generic-modal-content");el.innerHTML="";var t=document.createElement("div");t.style.cssText="font-size:16px;font-weight:600;margin-bottom:16px;text-align:center";t.textContent=msg;var row=document.createElement("div");row.style.cssText="display:flex;gap:10px";var yes=document.createElement("button");yes.className="btn btn-danger";yes.style.flex="1";yes.textContent="Delete";yes.onclick=function(){closeModal("generic-modal");onConfirm();};var no=document.createElement("button");no.className="btn btn-secondary";no.style.flex="1";no.textContent="Cancel";no.onclick=function(){closeModal("generic-modal");};row.appendChild(yes);row.appendChild(no);el.appendChild(t);el.appendChild(row);document.getElementById("generic-modal").classList.add("open");}
+function showInfoModal(title,msg){var el=document.getElementById("generic-modal-content");el.innerHTML="";var t=document.createElement("div");t.style.cssText="font-weight:700;font-size:17px;margin-bottom:12px";t.textContent=title;var m=document.createElement("div");m.style.cssText="font-size:14px;color:#374151;margin-bottom:16px;line-height:1.5";m.textContent=msg;var btn=document.createElement("button");btn.className="btn btn-primary";btn.style.width="100%";btn.textContent="OK";btn.onclick=function(){closeModal("generic-modal");};el.appendChild(t);el.appendChild(m);el.appendChild(btn);document.getElementById("generic-modal").classList.add("open");}
+function checkNotifications(){
+  if(typeof Notification!=="undefined"&&Notification.permission==="granted"&&!STATE.notifEnabled){STATE.notifEnabled=true;save();}
+  if(!STATE.notifEnabled||typeof Notification==="undefined"||Notification.permission!=="granted")return;
+  var now=new Date(),nowMs=now.getTime();
+  var userEvs=(STATE.events||[]).filter(function(e){return(e.members||[]).indexOf(currentUser)>=0||(e.parent===currentUser)||(e.parent==="both"&&(currentUser==="mike"||currentUser==="courtney"));});
+  var userRems=(STATE.reminders||[]).filter(function(r){return r.owner===currentUser&&!r.completed;});
+  [].concat(userEvs).concat(userRems).forEach(function(item){
+    (item.notifications||[]).forEach(function(mb){
+      if(!item.date)return;
+      var h=+(item.startH||item.h||12),m=+(item.startM||item.m||0),ap=item.startAP||item.ampm||"AM";
+      if(ap==="PM"&&h!==12)h+=12;if(ap==="AM"&&h===12)h=0;
+      var itemMs=new Date(item.date+"T"+String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")+":00").getTime();
+      var notifMs=itemMs-(mb*60000);
+      var key="n_"+item.id+"_"+mb+"_"+item.date;
+      if(nowMs>=notifMs&&nowMs<notifMs+120000&&!sessionStorage.getItem(key)){
+        var body=mb===0?"Now: "+item.title:mb<60?mb+" min: "+item.title:mb===60?"1 hour: "+item.title:"Tomorrow: "+item.title;
+        // Send via ntfy for locked screen notifications
+        try{
+          var nx=new XMLHttpRequest();
+          nx.open("POST","https://ntfy.sh/ZarzFamilyZone",true);
+          nx.setRequestHeader("Title","Family Hub");
+          nx.setRequestHeader("Priority","high");
+          nx.setRequestHeader("Tags","bell");
+          nx.send(body);
+        }catch(e){}
+        // Also try direct notification as fallback
+        try{
+          if(typeof Notification!=="undefined"&&Notification.permission==="granted"){
+            var n=new Notification("Family Hub",{body:body,tag:key});
+          }
+        }catch(e){}
+        sessionStorage.setItem(key,"1");
+      }
     });
-  }
+  });
+}
+setInterval(checkNotifications,30000);
+setTimeout(checkNotifications,5000);
+
+function enableNotif(){
+  if(typeof Notification==="undefined"){showNotifGuide();return;}
+  if(Notification.permission==="granted"){STATE.notifEnabled=true;save();renderCurrentTab();try{new Notification("Family Hub",{body:"Notifications are on!"});}catch(e){}return;}
+  if(Notification.permission==="denied"){showInfoModal("Notifications blocked","Go to Settings and allow notifications for this site, then tap Enable again.");return;}
+  Notification.requestPermission().then(function(p){if(p==="granted"){STATE.notifEnabled=true;save();renderCurrentTab();try{new Notification("Family Hub",{body:"Notifications are on! You will get alerts for events and reminders.",requireInteraction:false});}catch(e){}checkNotifications();}else{showNotifGuide();}}).catch(function(){showNotifGuide();});
 }
 function showNotifGuide(){
   var el=document.getElementById("generic-modal-content");el.innerHTML="";
@@ -1360,63 +1410,9 @@ function closeModal(id){document.getElementById(id).classList.remove("open");}
 
 try{var fu=localStorage.getItem("fhub_fburl");if(fu)FB_URL=fu;}catch(e){}
 
-// Firebase Cloud Messaging setup
-var fcmMessaging=null;
-try{
-  firebase.initializeApp({
-    apiKey: "AIzaSyA6hEEmGv3X0L5sQbZP2YYUQu-sixDqsPM",
-    authDomain: "family-hub-2-4a707.firebaseapp.com",
-    databaseURL: "https://family-hub-2-4a707-default-rtdb.firebaseio.com",
-    projectId: "family-hub-2-4a707",
-    storageBucket: "family-hub-2-4a707.firebasestorage.app",
-    messagingSenderId: "533379938918",
-    appId: "1:533379938918:web:949fbd193d22ff5b074ba7"
-});
-  fcmMessaging=firebase.messaging();
-}catch(e){console.log("FCM init error:",e);}
-
-async function getFCMToken(){
-  try{
-    var permission=await Notification.requestPermission();
-    if(permission!=="granted")throw new Error("Permission not granted");
-    var swReg=await navigator.serviceWorker.register("/firebase-messaging-sw.js");
-    var token=await fcmMessaging.getToken({
-      vapidKey:"BLuv5J3H0LpdaJ8VYgCVPCRqtsNK2ng1KIDuFMed4Zp8i0s5Gq36t7fHrOAsbQvjrIgLacpJjMvOKZwtqm_LtxQ",
-      serviceWorkerRegistration:swReg
-    });
-    if(!token)throw new Error("No token returned");
-    localStorage.setItem("fhub_fcm_token",token);
-    console.log("FCM Token:",token);
-    STATE.notifEnabled=true;
-    save();
-    renderCurrentTab();
-    return token;
-  }catch(e){
-    console.log("FCM error:",e.message);
-    return null;
-  }
-}
-
 
 if(fbConfigured()){fbPull(function(){startSync();});}
-initLogin();function eventCardHTML(ev,greyOut,conflict){
-  var color=greyOut?"#9ca3af":getMC(ev),light=greyOut?"#f3f4f6":getML(ev),isBday=ev.type==="birthday",pills="";
-  // Show job name pill if assigned
-  var jobObj=(ev.jobId&&STATE.jobs)?STATE.jobs.filter(function(j){return j.id===ev.jobId;})[0]:null;
-  if(jobObj){
-    pills+="<span class='pill' style='background:"+jobObj.color+";color:white;font-weight:600'>"+jobObj.name+"</span>";
-  } else {
-    // Only show member chips if no job assigned
-    (ev.members||[]).forEach(function(m){if(MEMBERS[m])pills+="<span class='pill' style='background:"+MEMBERS[m].color+";color:white'>"+MEMBERS[m].name+"</span>";});
-  }
-  var pb="";if(ev.parent){var pn=ev.parent==="both"?"Mike & Courtney attending":(MEMBERS[ev.parent]?MEMBERS[ev.parent].name+" attending":ev.parent+" attending");pb="<span class='pill' style='background:#e5e7eb;color:#374151'>"+pn+"</span>";}
-  var loc=ev.location?"<div style='font-size:12px;color:#6b7280;margin-top:2px'>"+ev.location+mapsLinks(ev.location)+"</div>":"";
-  var notes=ev.notes?"<div style='font-size:12px;color:#6b7280;margin-top:4px;font-style:italic'>"+ev.notes+"</div>":"";
-  var ts=isBday?"<div style='font-size:12px;color:#ec4899;margin-top:2px'>Yearly Birthday</div>":"<div style='font-size:12px;color:#6b7280;margin-top:2px'>"+fmtTime(ev.startH,ev.startM,ev.startAP)+" - "+fmtTime(ev.endH,ev.endM,ev.endAP)+"</div>";
-  var cb=conflict?"<span style='background:#fee2e2;color:#b91c1c;border-radius:6px;padding:1px 6px;font-size:10px;font-weight:600;margin-left:4px'>Family conflict</span>":"";
-  return "<div class='event-card' style='background:"+light+";border-left-color:"+color+"'><div style='font-weight:600;font-size:14px'>"+(isBday?"&#127874; ":"")+ev.title+cb+"</div>"+ts+loc+notes+"<div style='margin-top:4px'>"+pills+pb+"</div></div>";
-}
-
+initLogin();
 </script>
 </body>
 </html>
