@@ -328,7 +328,12 @@ var FB_URL="";
 function fbConfigured(){return FB_URL!=="";}
 function setSyncStatus(msg,color){var el=document.getElementById("sync-status-txt");if(el){el.textContent=msg;el.style.color=color||"#9ca3af";}}
 function fbPush(){if(!fbConfigured())return;setSyncStatus("Saving...","#6366f1");var xhr=new XMLHttpRequest();xhr.open("PUT",FB_URL+"/familyhub.json",true);xhr.setRequestHeader("Content-Type","application/json");xhr.onload=function(){if(xhr.status>=200&&xhr.status<300)setSyncStatus("Synced","#22c55e");else setSyncStatus("Save error "+xhr.status,"#ef4444");};xhr.onerror=function(){setSyncStatus("Network error","#ef4444");};xhr.send(JSON.stringify(STATE));}
-function fbPull(onDone){if(!fbConfigured()){if(onDone)onDone();return;}setSyncStatus("Syncing...","#6366f1");var xhr=new XMLHttpRequest();xhr.open("GET",FB_URL+"/familyhub.json",true);xhr.onload=function(){if(xhr.status>=200&&xhr.status<300){try{var remote=JSON.parse(xhr.responseText);if(remote&&typeof remote==="object"&&remote.events!==undefined){if(remote.appVersion&&remote.appVersion!==APP_VERSION){window.location.reload(true);return;}for(var k in remote)STATE[k]=remote[k];try{localStorage.setItem("fhub8",JSON.stringify(STATE));}catch(e){}if(currentUser)renderCurrentTab();}setSyncStatus("Synced","#22c55e");}catch(e){setSyncStatus("Parse error","#ef4444");}}else{setSyncStatus("Error "+xhr.status,"#ef4444");}if(onDone)onDone();};xhr.onerror=function(){setSyncStatus("Network error","#ef4444");if(onDone)onDone();};xhr.send();}
+function fbPull(onDone){if(!fbConfigured()){if(onDone)onDone();return;}setSyncStatus("Syncing...","#6366f1");var xhr=new XMLHttpRequest();xhr.open("GET",FB_URL+"/familyhub.json",true);xhr.onload=function(){if(xhr.status>=200&&xhr.status<300){try{var remote=JSON.parse(xhr.responseText);if(remote&&typeof remote==="object"&&remote.events!==undefined){if(remote.appVersion&&remote.appVersion!==APP_VERSION){window.location.reload(true);return;}for(var k in remote)STATE[k]=remote[k];try{localStorage.setItem("fhub8",JSON.stringify(STATE));}catch(e){}if(currentUser){
+        // Don't re-render shopping if user is typing in the input
+        var activeEl=document.activeElement;
+        var isTyping=activeEl&&(activeEl.id==="store-input"||activeEl.id==="groc-input"||activeEl.tagName==="INPUT"||activeEl.tagName==="TEXTAREA");
+        if(!isTyping)renderCurrentTab();
+      }}setSyncStatus("Synced","#22c55e");}catch(e){setSyncStatus("Parse error","#ef4444");}}else{setSyncStatus("Error "+xhr.status,"#ef4444");}if(onDone)onDone();};xhr.onerror=function(){setSyncStatus("Network error","#ef4444");if(onDone)onDone();};xhr.send();}
 var syncInterval=null;
 function startSync(){fbPull();if(syncInterval)clearInterval(syncInterval);syncInterval=setInterval(fbPull,5000);}
 function showSyncSetup(){var el=document.getElementById("generic-modal-content");el.innerHTML="";var t=document.createElement("div");t.style.cssText="font-weight:700;font-size:17px;margin-bottom:8px";t.textContent="Connect Family Sync";var sub=document.createElement("div");sub.style.cssText="font-size:13px;color:#6b7280;margin-bottom:14px;line-height:1.5";sub.textContent="One-time setup. Everyone enters the same URL. No tokens or passwords.";var steps=document.createElement("div");steps.style.cssText="background:#f9fafb;border-radius:10px;padding:12px;margin-bottom:12px";["Go to console.firebase.google.com","Create a project (e.g. myles-family)","Click Realtime Database in left menu","Click Create Database, any region","On rules page choose Start in test mode","Copy the database URL (https://...firebaseio.com)","Paste it below and tap Connect"].forEach(function(s,i){var row=document.createElement("div");row.style.cssText="display:flex;gap:8px;align-items:flex-start;padding:3px 0";var num=document.createElement("div");num.style.cssText="width:20px;height:20px;border-radius:50%;background:#6366f1;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0";num.textContent=i+1;var txt=document.createElement("div");txt.style.cssText="font-size:12px;color:#374151;line-height:1.4;padding-top:2px";txt.textContent=s;row.appendChild(num);row.appendChild(txt);steps.appendChild(row);});var note=document.createElement("div");note.style.cssText="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:8px 10px;font-size:12px;color:#166534;margin-bottom:12px";note.textContent="Safe to share with family. No passwords needed.";var lbl=document.createElement("div");lbl.style.cssText="font-size:11px;font-weight:600;color:#6b7280;margin-bottom:4px";lbl.textContent="Database URL";var inp=document.createElement("input");inp.id="fb-url-inp";inp.placeholder="https://your-project-default-rtdb.firebaseio.com";inp.style.marginBottom="12px";if(FB_URL)inp.value=FB_URL;var btnRow=document.createElement("div");btnRow.style.cssText="display:flex;gap:8px";var cb=document.createElement("button");cb.className="btn btn-primary";cb.style.flex="1";cb.textContent="Connect";cb.onclick=function(){var url=document.getElementById("fb-url-inp").value.trim().replace(/\/+$/,"");if(!url||!url.startsWith("https://")){showInfoModal("Invalid URL","Enter the full URL starting with https://");return;}FB_URL=url;localStorage.setItem("fhub_fburl",url);cb.textContent="Connecting...";cb.disabled=true;
@@ -1122,7 +1127,12 @@ function processMidnightChores(){
     });
     STATE.chores[mk]=keep;
   });
-  if(changed){save();if(currentUser)renderCurrentTab();}
+  if(changed){save();if(currentUser){
+        // Don't re-render shopping if user is typing in the input
+        var activeEl=document.activeElement;
+        var isTyping=activeEl&&(activeEl.id==="store-input"||activeEl.id==="groc-input"||activeEl.tagName==="INPUT"||activeEl.tagName==="TEXTAREA");
+        if(!isTyping)renderCurrentTab();
+      }}
 }
 
 // Check for overnight chore renewal every minute
@@ -1539,7 +1549,7 @@ async function registerFCMToken(){
       var xhr=new XMLHttpRequest();
       xhr.open("PUT",FB_URL+"/fcmTokens/"+btoa(token).replace(/[^a-zA-Z0-9]/g,"").slice(0,20)+".json",true);
       xhr.setRequestHeader("Content-Type","application/json");
-      xhr.send(JSON.stringify({token:token,updated:new Date().toISOString()}));
+      xhr.send(JSON.stringify({token:token,user:currentUser,updated:new Date().toISOString()}));
       localStorage.setItem("fhub_fcm",token);
       return token;
     } else {
